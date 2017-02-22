@@ -1,0 +1,50 @@
+#+TITLE: Mango Madness Notes
+
+** GitHub Notes
+*** How to create a GitHub project for use with SodBeans
+    The following process follows the directions at: https://www.quorumlanguage.com/tutorials/language/teamsAndVersionControl.html
+    - Create a new repository on GitHub
+      e.g. mango-madness
+    - Obtain the URL of the GitHub repository
+      e.g. https://github.com/drmarkafriedman/mango-madness
+    - Clone the GitHub repository into SodBeans
+      - Menu Select in SodBeans: Team > Commit
+        - Remote Repository
+          Repository URL: https://github.com/drmarkafriedman/mango-madness
+          User: xxxxxxxx
+          Password: xxxxxxxx
+          Clone into: C:\Users\Dr. Mark A. Friedman\Documents\NetBeansProjects
+          Click on Next
+        - Remote Branches
+          [x] Master
+          Click on Next
+        - Destination Directory
+          Parent Directory: C:\Users\Dr. Mark A. Friedman\Documents\NetBeansProjects
+          Clone Name: mango-madness
+          Checkout Branch: master*
+          Remote Name: origin [x]
+          Scan for NetBeans Projects after Clone
+          Click on Finish
+        - Clone Completed
+          - Do you want to create an IDE project from the cloned sources?
+            [ ] Open Sources in Favorites
+            Click on Create Project
+              Choose Project
+                Quorum > Game Application
+                Click on Next
+              Name and Location
+                Project Name: Mango Madness
+                Project Location: C:\Users\Dr. Mark A. Friedman\Documents\NetBeansProjects\mango-madness
+                Project Folder: Mango Madness C:\Users\Dr. Mark A. Friedman\Documents\NetBeansProjects\mango-madness\Mango Madness
+                Click on Finish
+    - Start development of the new project or copy existing code and assets into the newly created project
+
+*** How to commit changes to the SodBeans project to the GitHub repository
+    The following process follows the directions at: https://www.quorumlanguage.com/tutorials/language/teamsAndVersionControl.html
+    - Menu Select in SodBeans: Team > Commit
+        Commit Message: xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+        Click on Commit
+    - Menu Select in SodBeans: Team > Remote > Push to Upstream
+  
+  
+  
