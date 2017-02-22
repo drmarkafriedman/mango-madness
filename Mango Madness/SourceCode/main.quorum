@@ -1,0 +1,612 @@
+//=============================================================================
+// Mango Madness by Tommy Pelletier, Sam Shaw and Mark Friedman
+// Game play: Shoot mangos from a cannon at seagulls and knock them out of the
+//   sky into a vat of acid to score points.
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Quorum libraries needed for Mango Madness
+
+use Libraries.Compute.Math
+use Libraries.Game.Game
+use Libraries.Game.Graphics.Drawable
+use Libraries.Game.Graphics.Label
+use Libraries.Game.InputMonitor
+use Libraries.Interface.Events.KeyboardEvent
+use Libraries.Interface.Events.KeyboardListener
+use Libraries.Sound.Audio
+
+//-----------------------------------------------------------------------------
+// Mango Madness is a Quorum Game
+
+class Main is Game
+
+integer switch = 0
+
+//=============================================================================
+// Customize screen_width, screen_height, game_speed and game_volume
+//     to adjust the desired experience.
+
+// the width and height to which the screen will be set in pixels
+
+integer screen_width = 1366
+integer screen_height = 768
+
+// game speed determines the speed of all objects in the game
+
+number game_speed = 2.0
+
+// game volume determines the volume of all objects in the game
+
+number game_volume = 0.5
+
+//=============================================================================
+// Generally, there is no need to customize the variables below.
+
+// utility objects
+
+Math math
+
+InputMonitor inputMonitor
+KeyboardEvent keys
+
+// when the game starts first display the logo, then display game instructions,
+//     and then start the game play
+
+integer game_state_logo = 0
+integer game_state_instructions = 1
+integer game_state_play = 2
+
+integer game_state = game_state_logo
+
+// the game background is an ocean image
+
+Drawable background
+text background_image_filename = "assets/ocean.png"
+number background_scale = 0.75
+
+// the game background sound
+
+Audio background_sound
+text background_sound_filename = "assets/developers-remix.ogg"
+number background_sound_volume = 0.05
+
+// game score displays attempts and hits or mangos at seagulls
+
+integer hits = 0
+integer attempts = 0
+Label score
+
+// the seagull assets, attributes and variables
+
+integer seagull_flying = 0
+integer seagull_falling = 1
+
+text seagull_flying_image_filename = "assets/seagull_flying.png"
+number seagull_flying_scale = 0.25
+number seagull_flying_delta_x = 1.25 * game_speed
+
+text seagull_flying_sound_filename = "assets/seagull_flying.ogg"
+number seagull_flying_sound_volume = 1.0
+
+text seagull_falling_image_filename = "assets/seagull_falling.png"
+number seagull_falling_scale = 0.25
+number seagull_falling_delta_y = 1.5 * game_speed
+
+text seagull_falling_sound_filename = "assets/seagull_falling.ogg"
+number seagull_falling_sound_volume = 0.25
+
+integer seagull1_state = seagull_flying
+
+Drawable seagull1_flying
+number seagull1_flying_x_start = -250.0
+number seagull1_flying_y_start = screen_height - 250.0
+integer seagull1_flying_direction_start = 1
+number seagull1_flying_x = seagull1_flying_x_start
+number seagull1_flying_y = seagull1_flying_y_start
+integer seagull1_flying_direction = seagull1_flying_direction_start
+
+Audio seagull1_flying_sound
+
+Drawable seagull1_falling
+number seagull1_falling_x = 0.0
+number seagull1_falling_y = 0.0
+
+number seagull1_falling_x_start = 0.0
+
+Audio seagull1_falling_sound
+
+integer seagull2_state = seagull_flying
+
+Drawable seagull2_flying
+number seagull2_flying_x_start = screen_width + 100.0
+number seagull2_flying_y_start = screen_height - 137.5
+integer seagull2_flying_direction_start = -1
+number seagull2_flying_x = seagull2_flying_x_start
+number seagull2_flying_y = seagull2_flying_y_start
+integer seagull2_flying_direction = seagull2_flying_direction_start
+
+Audio seagull2_flying_sound	    
+
+Drawable seagull2_falling
+number seagull2_falling_x = 0.0
+number seagull2_falling_y = 0.0
+
+number seagull2_falling_x_start = 0.0
+
+Audio seagull2_falling_sound
+
+// the vat of acid assets, attributes and variables
+
+Drawable acid
+text acid_image_filename = "assets/acid.png"
+number acid_x = screen_width + 50.0
+number acid_y = 125.0
+number acid_scale=0.75
+number acid_delta_x = 0.375 * game_speed
+number acid_delta_y = 0.0 * game_speed
+integer acid_direction = -1
+
+number acid_y_middle = 0.0
+
+// the pirate ship assets, attributes and variables
+
+Drawable ship
+text ship_image_filename = "assets/ship.png"
+number ship_x = 200.0
+number ship_y = 50.0
+number ship_scale = 1.5
+number ship_delta_x = 0.75 * game_speed
+number ship_delta_y = 0.0 * game_speed
+
+// the character assets, attributes and variables
+
+Audio kanye_scream
+text kanye_scream_filename = "assets/kanye-scream.ogg"
+number kanye_scream_volume = 1.0
+
+Audio kanye_huh
+text kanye_huh_filename = "assets/kanye-huh.ogg"
+number kanye_huh_volume = 1.0
+
+// the mango assets, attributes and variables
+
+Drawable mango
+text mango_image_filename = "assets/mango.png"
+number mango_x = 0.0
+number mango_y = 0.0
+number mango_scale = 0.25
+number mango_delta_x = 0.0 * game_speed
+number mango_delta_y = 2.75 * game_speed
+
+// mango may be loaded, shooting or waiting to load
+
+integer mango_state_loaded = 0
+integer mango_state_shooting = 1
+integer mango_state_waiting_to_load = 2
+
+integer mango_state = mango_state_loaded
+
+// the explosion assets, attributes and variables
+
+Drawable explosion
+text explosion_image_filename = "assets/explosion.png"
+number explosion_x = 0.0
+number explosion_y = 0.0
+number explosion_scale = 0.33
+
+// the mango madness logo
+
+Drawable logo
+text logo_image_filename = "assets/logo.png"
+number logo_x = 0
+number logo_y = 0
+number logo_scale = 0
+
+Audio song
+number song_volume = 1.0
+
+// the mango madness instruction screen
+
+Drawable startScreen
+
+//-----------------------------------------------------------------------------
+// Main Action
+
+action Main
+SetScreenSize(screen_width, screen_height)
+StartGame()
+end
+
+//-----------------------------------------------------------------------------
+// CreateGame Action
+
+action CreateGame
+
+// Set the attributes of our objects and add them to the game
+
+background:Load(background_image_filename)
+background:Scale(background_scale)
+Add(background)
+
+background_sound:Load(background_sound_filename)
+background_sound:SetVolume(game_volume * background_sound_volume)
+background_sound:SetX(0.0)
+background_sound:SetY(0.0)
+background_sound:SetZ(0.0)
+
+score:SetText("Score: " + hits + " hits of " + attempts + " attempts")
+score:SetPosition(20, screen_height - 80)
+score:SetSize(48)
+Add(score)
+
+seagull1_falling:Load(seagull_falling_image_filename)
+seagull1_falling:SetPosition(seagull1_falling_x, seagull1_falling_y)
+seagull1_falling:Scale(seagull_falling_scale)
+seagull1_falling:FlipY()
+seagull1_falling:Hide()
+Add(seagull1_falling)
+
+seagull1_falling_sound:Load(seagull_falling_sound_filename)
+seagull1_falling_sound:SetVolume(game_volume * seagull_falling_sound_volume)
+
+seagull2_falling:Load(seagull_falling_image_filename)
+seagull2_falling:SetPosition(seagull2_falling_x, seagull2_falling_y)
+seagull2_falling:Scale(seagull_falling_scale)
+seagull2_falling:FlipY()
+seagull2_falling:Hide()
+Add(seagull2_falling)
+
+seagull2_falling_sound:Load(seagull_falling_sound_filename)
+seagull2_falling_sound:SetVolume(game_volume * seagull_falling_sound_volume)
+
+acid:Load(acid_image_filename)
+acid:SetPosition(acid_x, acid_y)
+acid:Scale(acid_scale)
+Add(acid)
+
+acid_y_middle = acid_y + 0.4 * acid_scale * acid:GetHeight()
+
+ship:Load(ship_image_filename)
+ship:SetPosition(ship_x, ship_y)
+ship:Scale(ship_scale)
+Add(ship)
+
+seagull1_flying:Load(seagull_flying_image_filename)
+seagull1_flying:SetPosition(seagull1_flying_x, seagull1_flying_y)
+seagull1_flying:Scale(seagull_flying_scale)
+Add(seagull1_flying)
+
+seagull1_flying_sound:Load(seagull_flying_sound_filename)
+seagull1_flying_sound:SetVolume(game_volume * seagull_flying_sound_volume)
+
+seagull2_flying:Load(seagull_flying_image_filename)
+seagull2_flying:SetPosition(seagull2_flying_x, seagull2_flying_y)
+seagull2_flying:Scale(seagull_flying_scale)
+seagull2_flying:SetFlipX(true)
+Add(seagull2_flying)
+
+seagull2_flying_sound:Load(seagull_flying_sound_filename)
+seagull2_flying_sound:SetVolume(game_volume * seagull_flying_sound_volume)
+
+mango:Load(mango_image_filename)
+mango:SetPosition(mango_x, mango_y)
+mango:SetScale(0.33 * mango_scale)
+mango:Hide()
+Add(mango)
+
+explosion:Load(explosion_image_filename)
+explosion:SetPosition(explosion_x, explosion_y)
+explosion:SetScale(explosion_scale)
+explosion:Hide()
+Add(explosion)
+
+logo:Load(logo_image_filename)
+
+if screen_width / logo:GetWidth() > screen_height / logo:GetHeight()
+logo_scale = screen_width / logo:GetWidth()
+else
+logo_scale = screen_height / logo:GetHeight()
+end
+logo:SetPosition((screen_width - logo_scale * logo:GetWidth()) / 2.0, (screen_height - logo_scale * logo:GetHeight()) / 2.0)
+logo:Scale(logo_scale)
+
+Add (logo)
+
+song:Load("assets/java.ogg")
+song:SetVolume(game_volume * song_volume)
+song:Play()
+
+end
+
+//-----------------------------------------------------------------------------
+// Update Action
+
+action Update(number seconds)
+
+// Update what our objects are doing through each frame of the game
+
+if inputMonitor:IsKeyPressed(keys:Q)
+Exit()
+end
+
+// logo state logic
+
+if game_state = game_state_logo
+
+if inputMonitor:IsKeyPressed(keys:C)
+logo:Hide()
+game_state = game_state_instructions
+end
+
+// game instructions state logic
+
+elseif game_state = game_state_instructions
+
+if inputMonitor:IsKeyPressed(keys:C)
+song:Stop()
+game_state = game_state_play
+end
+
+// game play state logic
+
+elseif game_state = game_state_play
+
+// play the background music
+
+if background_sound:IsPlaying() = false
+background_sound:Play()
+end
+
+// move the ship left
+
+if inputMonitor:IsKeyPressed(keys:LEFT)
+ship_x = ship_x - ship_delta_x
+if ship_x < 0
+ship_x = 0
+end
+ship:SetX(ship_x)
+end
+
+// move the ship right
+
+if inputMonitor:IsKeyPressed(keys:RIGHT)
+ship_x = ship_x + ship_delta_x
+if ship_x > screen_width - ship_scale * ship:GetWidth()
+ship_x = screen_width - ship_scale * ship:GetWidth()
+end
+ship:SetX(ship_x)
+end
+
+// shoot the mango if loaded
+
+if mango_state = mango_state_loaded
+if inputMonitor:IsKeyPressed(keys:SPACE)
+mango_state = mango_state_shooting
+attempts = attempts + 1
+score:SetText("Score: " + hits + " hits of " + attempts + " attempts")
+end
+end
+
+// move the vat of acid
+
+if acid_x > screen_width - acid_scale * acid:GetWidth()
+acid_direction = -1
+elseif acid_x < 0.0
+acid_direction = 1
+end
+
+acid_x = acid_x + acid_delta_x * acid_direction
+acid:SetX(acid_x)
+
+// animate the flying seagull
+
+if seagull1_state = seagull_flying
+
+seagull1_flying_x = seagull1_flying_x + seagull_flying_delta_x * seagull1_flying_direction
+seagull1_flying:SetX(seagull1_flying_x)
+
+if seagull1_flying_x > screen_width + 1.5 * seagull_flying_scale * seagull1_flying:GetWidth()
+seagull1_flying_direction = -1
+seagull1_flying:SetFlipX(true)
+elseif seagull1_flying_x < -3.5 * seagull_flying_scale * seagull1_flying:GetWidth()
+seagull1_flying_direction = 1
+seagull1_flying:SetFlipX(false)
+end
+
+if seagull1_flying_sound:IsPlaying() = false
+seagull1_flying_sound:Play()
+end
+
+seagull1_flying_sound:SetX((seagull1_flying_x - (screen_width / 2.0)) / 100.0)
+seagull1_flying_sound:SetY(0.0)
+seagull1_flying_sound:SetZ(0.0)
+
+// animate the falling seagull
+
+elseif seagull1_state = seagull_falling
+
+seagull1_falling_y = seagull1_falling_y - seagull_falling_delta_y
+
+if seagull1_falling_y > acid_y_middle
+
+seagull1_falling_x = (acid_x + (acid_scale * acid:GetWidth() - seagull_falling_scale * seagull1_falling:GetWidth()) / 2.0) - ((acid_x + (acid_scale * acid:GetWidth() - seagull_falling_scale * seagull1_falling:GetWidth()) / 2.0) - seagull1_falling_x_start) * (seagull1_falling_y - acid_y_middle) / (seagull1_flying_y_start - acid_y_middle)
+seagull1_falling:SetPosition(seagull1_falling_x, seagull1_falling_y)
+
+seagull1_falling_sound:SetX((seagull1_falling_x - (screen_width / 2.0)) / 100.0)
+seagull1_falling_sound:SetY(0.0)
+seagull1_falling_sound:SetZ(0.0)
+
+explosion:SetAlpha(0.75 * (seagull1_falling_y - acid_y_middle) / (seagull1_flying_y_start - acid_y_middle))
+
+else
+
+mango_state = mango_state_loaded
+
+seagull1_state = seagull_flying
+
+seagull1_flying_x = seagull1_flying_x_start
+seagull1_flying_y = seagull1_flying_y_start
+integer seagull1_flying_direction = seagull1_flying_direction_start
+seagull1_flying:SetPosition(seagull1_flying_x, seagull1_flying_y)
+seagull1_flying:Show()
+
+seagull1_falling:Hide()
+
+explosion:Hide()
+
+hits = hits + 1
+score:SetText("Score: " + hits + " hits of " + attempts + " attempts")
+
+end
+
+end
+
+// animate the flying seagull
+
+if seagull2_state = seagull_flying
+
+seagull2_flying_x = seagull2_flying_x + seagull_flying_delta_x * seagull2_flying_direction
+seagull2_flying:SetX(seagull2_flying_x)
+
+if seagull2_flying_x > screen_width + 2.5 * seagull_flying_scale * seagull2_flying:GetWidth()
+seagull2_flying_direction = -1
+seagull2_flying:SetFlipX(true)
+elseif seagull2_flying_x < -3.0 * seagull_flying_scale * seagull2_flying:GetWidth()
+seagull2_flying_direction = 1
+seagull2_flying:SetFlipX(false)
+end
+
+if seagull2_flying_sound:IsPlaying() = false
+seagull2_flying_sound:Play()
+end
+
+seagull2_flying_sound:SetX((seagull2_flying_x - (screen_width / 2.0)) / 100.0)
+seagull2_flying_sound:SetY(0.0)
+seagull2_flying_sound:SetZ(0.0)
+
+// animate the falling seagull
+
+elseif seagull2_state = seagull_falling
+
+seagull2_falling_y = seagull2_falling_y - seagull_falling_delta_y
+
+if seagull2_falling_y > acid_y_middle
+
+seagull2_falling_x = (acid_x + (acid_scale * acid:GetWidth() - seagull_falling_scale * seagull2_falling:GetWidth()) / 2.0) - ((acid_x + (acid_scale * acid:GetWidth() - seagull_falling_scale * seagull2_falling:GetWidth()) / 2.0) - seagull2_falling_x_start) * (seagull2_falling_y - acid_y_middle) / (seagull2_flying_y_start - acid_y_middle)
+seagull2_falling:SetPosition(seagull2_falling_x, seagull2_falling_y)
+
+seagull2_falling_sound:SetX((seagull2_falling_x - (screen_width / 2.0)) / 100.0)
+seagull2_falling_sound:SetY(0.0)
+seagull2_falling_sound:SetZ(0.0)
+
+explosion:SetAlpha(0.75 * (seagull1_falling_y - acid_y_middle) / (seagull1_flying_y_start - acid_y_middle))
+
+else
+
+mango_state = mango_state_loaded
+
+seagull2_state = seagull_flying
+
+seagull2_flying_x = seagull2_flying_x_start
+seagull2_flying_y = seagull2_flying_y_start
+integer seagull2_flying_direction = seagull2_flying_direction_start
+seagull2_flying:SetPosition(seagull2_flying_x, seagull2_flying_y)
+seagull2_flying:Show()
+
+seagull2_falling:Hide()
+
+explosion:Hide()
+
+hits = hits + 1
+score:SetText("Score: " + hits + " hits of " + attempts + " attempts")
+
+end
+
+end
+
+if mango_state = mango_state_loaded
+
+mango_x = ship_x + 0.99 * ship_scale * ship:GetWidth()
+mango_y = ship_y + 0.33 * ship_scale * ship:GetHeight()
+mango:SetPosition(mango_x - 0.5 * 0.33 * mango_scale * mango:GetWidth(), mango_y - 0.5 * 0.33 * mango_scale * mango:GetHeight())
+mango:SetScale(0.33 * mango_scale)
+mango:Show()
+
+elseif mango_state = mango_state_shooting
+
+mango_y = mango_y + mango_delta_y
+mango:SetPosition(mango_x - 0.5 * mango_scale * mango:GetWidth(), mango_y - 0.5 * mango_scale * mango:GetHeight())
+mango:SetScale(mango_scale)
+mango:Show()
+
+number mango_center_x = mango_x + 0.5 * mango_scale * mango:GetWidth()
+number mango_center_y = mango_y + 0.5 * mango_scale * mango:GetHeight()
+
+number seagull1_flying_center_x = seagull1_flying_x + 0.5 * seagull_flying_scale * seagull1_flying:GetWidth()
+number seagull1_flying_center_y = seagull1_flying_y + 0.5 * seagull_flying_scale * seagull1_flying:GetHeight()
+
+number seagull2_flying_center_x = seagull2_flying_x + 0.5 * seagull_flying_scale * seagull2_flying:GetWidth()
+number seagull2_flying_center_y = seagull2_flying_y + 0.5 * seagull_flying_scale * seagull2_flying:GetHeight()
+
+if math:SquareRoot((mango_center_x - seagull1_flying_center_x) * (mango_center_x - seagull1_flying_center_x) + (mango_center_y - seagull1_flying_center_y) * (mango_center_y - seagull1_flying_center_y)) < 50
+
+mango_state = mango_state_waiting_to_load
+
+seagull1_state = seagull_falling
+
+seagull1_flying:Hide()
+seagull1_flying_sound:Stop()
+
+seagull1_falling_x_start = seagull1_flying_x
+seagull1_falling_x = seagull1_flying_x
+seagull1_falling_y = seagull1_flying_y
+seagull1_falling:SetPosition(seagull1_falling_x, seagull1_falling_y)
+seagull1_falling:Show()
+seagull1_falling_sound:Play()
+
+explosion_x = mango_x + 0.5 * mango_scale * mango:GetWidth()
+explosion_y = mango_y + 0.5 * mango_scale * mango:GetHeight()
+explosion:SetPosition(explosion_x - 0.5 * explosion_scale * explosion:GetWidth(), explosion_y - 0.5 * explosion_scale * explosion:GetHeight())
+explosion:SetAlpha(1.0)
+explosion:Show()
+
+elseif math:SquareRoot((mango_center_x - seagull2_flying_center_x) * (mango_center_x - seagull2_flying_center_x) + (mango_center_y - seagull2_flying_center_y) * (mango_center_y - seagull2_flying_center_y)) < 50
+
+mango_state = mango_state_waiting_to_load
+
+seagull2_state = seagull_falling
+
+seagull2_flying:Hide()
+seagull2_flying_sound:Stop()
+
+seagull2_falling_x_start = seagull2_flying_x
+seagull2_falling_x = seagull2_flying_x
+seagull2_falling_y = seagull2_flying_y
+seagull2_falling:SetPosition(seagull2_falling_x, seagull2_falling_y)
+seagull2_falling:Show()
+seagull2_falling_sound:Play()
+
+explosion_x = mango_x + 0.5 * mango_scale * mango:GetWidth()
+explosion_y = mango_y + 0.5 * mango_scale * mango:GetHeight()
+explosion:SetPosition(explosion_x - 0.5 * explosion_scale * explosion:GetWidth(), explosion_y - 0.5 * explosion_scale * explosion:GetHeight())
+explosion:SetAlpha(1.0)
+explosion:Show()
+
+elseif mango_y > screen_height + 1.0 * mango_scale * mango:GetHeight()
+
+mango_state = mango_state_loaded
+
+end
+
+elseif mango_state = mango_state_waiting_to_load
+
+mango:Hide()
+
+end
+
+end
+
+end
+
+end
