@@ -1,3 +1,4 @@
+
 //=============================================================================
 // Mango Madness by Tommy Pelletier, Sam Shaw and Mark Friedman
 // Game play: Shoot mangos from a cannon at seagulls and knock them out of the
@@ -16,7 +17,6 @@ use Libraries.Interface.Events.KeyboardEvent
 use Libraries.Interface.Events.KeyboardListener
 use Libraries.Sound.Audio
 
-
 //-----------------------------------------------------------------------------
 // Mango Madness is a Quorum Game
 
@@ -26,7 +26,7 @@ integer switch = 0
 
 //=============================================================================
 // Customize screen_width, screen_height, game_speed and game_volume
-//     to adjust the desired experience.
+// 	to adjust the desired experience.
 
 // the width and height to which the screen will be set in pixels
 
@@ -52,7 +52,7 @@ InputMonitor inputMonitor
 KeyboardEvent keys
 
 // when the game starts first display the logo, then display game instructions,
-//     and then start the game play
+// 	and then start the game play
 
 integer game_state_logo = 0
 integer game_state_instructions = 1
@@ -94,8 +94,9 @@ text seagull_falling_image_filename = "assets/seagull_falling.png"
 number seagull_falling_scale = 0.25
 number seagull_falling_delta_y = 1.5 * game_speed
 
-text seagull_falling_sound_filename = "assets/seagull_falling.ogg"
+text seagull_1_falling_sound_filename = "assets/seagull_falling.ogg"
 number seagull_falling_sound_volume = 0.25
+text seagull_2_falling_sound_filename = "assets/seagull-die.ogg"
 
 integer seagull1_state = seagull_flying
 
@@ -127,7 +128,7 @@ number seagull2_flying_x = seagull2_flying_x_start
 number seagull2_flying_y = seagull2_flying_y_start
 integer seagull2_flying_direction = seagull2_flying_direction_start
 
-Audio seagull2_flying_sound	    
+Audio seagull2_flying_sound    	
 
 Drawable seagull2_falling
 number seagull2_falling_x = 0.0
@@ -248,7 +249,7 @@ seagull1_falling:FlipY()
 seagull1_falling:Hide()
 Add(seagull1_falling)
 
-seagull1_falling_sound:Load(seagull_falling_sound_filename)
+seagull1_falling_sound:Load(seagull_1_falling_sound_filename)
 seagull1_falling_sound:SetVolume(game_volume * seagull_falling_sound_volume)
 
 seagull2_falling:Load(seagull_falling_image_filename)
@@ -258,7 +259,7 @@ seagull2_falling:FlipY()
 seagull2_falling:Hide()
 Add(seagull2_falling)
 
-seagull2_falling_sound:Load(seagull_falling_sound_filename)
+seagull2_falling_sound:Load(seagull_2_falling_sound_filename)
 seagull2_falling_sound:SetVolume(game_volume * seagull_falling_sound_volume)
 
 acid:Load(acid_image_filename)
@@ -611,3 +612,6 @@ end
 end
 
 end
+
+
+
