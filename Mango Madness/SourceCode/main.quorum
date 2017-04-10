@@ -85,14 +85,16 @@ integer seagull_falling = 1
 
 text seagull_flying_image_filename = "assets/seagull_flying.png"
 number seagull_flying_scale = 0.25
-number seagull_flying_delta_x = 1.25 * game_speed
+number seagull_flying_delta_x = 0.5 * game_speed
 
 text seagull_flying_sound_filename = "assets/seagull_flying.ogg"
-number seagull_flying_sound_volume = 1.0
+text seagull_flying_sound_filename2 = "assets/seagull_flying_sound2.ogg"
+
+number seagull_flying_sound_volume = 2.0
 
 text seagull_falling_image_filename = "assets/seagull_falling.png"
 number seagull_falling_scale = 0.25
-number seagull_falling_delta_y = 1.5 * game_speed
+number seagull_falling_delta_y = 0.15 * game_speed
 
 text seagull_1_falling_sound_filename = "assets/seagull_falling.ogg"
 number seagull_falling_sound_volume = 0.25
@@ -165,7 +167,7 @@ number ship_delta_y = 0.0 * game_speed
 
 Audio kanye_scream
 text kanye_scream_filename = "assets/kanye-scream.ogg"
-number kanye_scream_volume = 1.0
+number kanye_scream_volume = 0.1
 
 Audio kanye_huh
 text kanye_huh_filename = "assets/kanye-huh.ogg"
@@ -232,7 +234,7 @@ background:Scale(background_scale)
 Add(background)
 
 background_sound:Load(background_sound_filename)
-background_sound:SetVolume(game_volume * background_sound_volume)
+background_sound:SetVolume(background_sound_volume)
 background_sound:SetX(0.0)
 background_sound:SetY(0.0)
 background_sound:SetZ(0.0)
@@ -279,7 +281,7 @@ seagull1_flying:SetPosition(seagull1_flying_x, seagull1_flying_y)
 seagull1_flying:Scale(seagull_flying_scale)
 Add(seagull1_flying)
 
-seagull1_flying_sound:Load(seagull_flying_sound_filename)
+seagull1_flying_sound:Load(seagull_flying_sound_filename2)
 seagull1_flying_sound:SetVolume(game_volume * seagull_flying_sound_volume)
 
 seagull2_flying:Load(seagull_flying_image_filename)
@@ -319,6 +321,9 @@ song:Load("assets/java.ogg")
 song:SetVolume(game_volume * song_volume)
 song:Play()
 
+kanye_scream:Load(kanye_scream_filename)
+kanye_scream:SetVolume(kanye_scream_volume)
+
 end
 
 //-----------------------------------------------------------------------------
@@ -357,10 +362,23 @@ elseif game_state = game_state_play
 // play the background music
 
 if background_sound:IsPlaying() = false
+background_sound:SetVolume(background_sound_volume)
 background_sound:Play()
 end
 
+/*
+if kanye_scream:IsPlaying() = false
+kanye_scream:Play()
+end
+*/
+
+//Move Kanye scream
+//kanye_scream:SetX(ship_x)
+kanye_scream:SetX((ship_x -(screen_width / 2.0)) / 100.0)
+kanye_scream:SetY(0)
+kanye_scream:SetZ(0)
 // move the ship left
+
 
 if inputMonitor:IsKeyPressed(keys:LEFT)
 ship_x = ship_x - ship_delta_x
@@ -421,6 +439,7 @@ seagull1_flying_sound:Play()
 end
 
 seagull1_flying_sound:SetX((seagull1_flying_x - (screen_width / 2.0)) / 100.0)
+
 seagull1_flying_sound:SetY(0.0)
 seagull1_flying_sound:SetZ(0.0)
 
