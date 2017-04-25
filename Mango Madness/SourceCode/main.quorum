@@ -35,7 +35,7 @@ integer screen_height = 768
 
 // game speed determines the speed of all objects in the game
 
-number game_speed = 2.0
+number game_speed = 5.0
 
 // game volume determines the volume of all objects in the game
 
@@ -377,9 +377,8 @@ end
 kanye_scream:SetX((ship_x -(screen_width / 2.0)) / 100.0)
 kanye_scream:SetY(0)
 kanye_scream:SetZ(0)
+
 // move the ship left
-
-
 if inputMonitor:IsKeyPressed(keys:LEFT)
 ship_x = ship_x - ship_delta_x
 if ship_x < 0
@@ -570,6 +569,7 @@ number seagull1_flying_center_y = seagull1_flying_y + 0.5 * seagull_flying_scale
 number seagull2_flying_center_x = seagull2_flying_x + 0.5 * seagull_flying_scale * seagull2_flying:GetWidth()
 number seagull2_flying_center_y = seagull2_flying_y + 0.5 * seagull_flying_scale * seagull2_flying:GetHeight()
 
+//Check for collision with seagull1
 if math:SquareRoot((mango_center_x - seagull1_flying_center_x) * (mango_center_x - seagull1_flying_center_x) + (mango_center_y - seagull1_flying_center_y) * (mango_center_y - seagull1_flying_center_y)) < 50
 
 mango_state = mango_state_waiting_to_load
@@ -592,6 +592,7 @@ explosion:SetPosition(explosion_x - 0.5 * explosion_scale * explosion:GetWidth()
 explosion:SetAlpha(1.0)
 explosion:Show()
 
+//check for collision with seagull 2
 elseif math:SquareRoot((mango_center_x - seagull2_flying_center_x) * (mango_center_x - seagull2_flying_center_x) + (mango_center_y - seagull2_flying_center_y) * (mango_center_y - seagull2_flying_center_y)) < 50
 
 mango_state = mango_state_waiting_to_load
