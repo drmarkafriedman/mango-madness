@@ -35,7 +35,7 @@ integer screen_height = 768
 
 // game speed determines the speed of all objects in the game
 
-number game_speed = 5.0
+number game_speed = 2.0
 
 // game volume determines the volume of all objects in the game
 
@@ -360,21 +360,24 @@ end
 elseif game_state = game_state_play
 
 // play the background music
-
+/*
 if background_sound:IsPlaying() = false
 background_sound:SetVolume(background_sound_volume)
 background_sound:Play()
 end
+*/
 
-/*
+if inputMonitor:IsKeyPressed(keys:UP)
 if kanye_scream:IsPlaying() = false
 kanye_scream:Play()
 end
-*/
+end
+
 
 //Move Kanye scream
 //kanye_scream:SetX(ship_x)
-kanye_scream:SetX((ship_x -(screen_width / 2.0)) / 100.0)
+//kanye_scream:SetX((ship_x -(screen_width / 2.0)) / 100.0)
+kanye_scream:SetX(ship_x)
 kanye_scream:SetY(0)
 kanye_scream:SetZ(0)
 
