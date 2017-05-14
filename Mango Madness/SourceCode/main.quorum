@@ -360,12 +360,12 @@ end
 elseif game_state = game_state_play
 
 // play the background music
-/*
+
 if background_sound:IsPlaying() = false
 background_sound:SetVolume(background_sound_volume)
 background_sound:Play()
 end
-*/
+
 
 if inputMonitor:IsKeyPressed(keys:ENTER)
 if kanye_scream:IsPlaying() = false
