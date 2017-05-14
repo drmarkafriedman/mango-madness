@@ -367,7 +367,7 @@ background_sound:Play()
 end
 */
 
-if inputMonitor:IsKeyPressed(keys:UP)
+if inputMonitor:IsKeyPressed(keys:ENTER)
 if kanye_scream:IsPlaying() = false
 kanye_scream:Play()
 end
